@@ -62,6 +62,7 @@ function ANDParameterStore() {
 				store.setValue(item,"Name",parameter.Name);
 				store.setValue(item,"Value",parameter.Value);
 				store.setValue(item,"Type",parameter.Type);
+				store.setValue(item, "Unit", parameter.Unit);
 				store.setValue(item,"Timestamp",parameter.Timestamp);
 			},
 			onError: function(er) {
@@ -171,7 +172,7 @@ function GraphView(id, store) {
 	chart.addAxis("x");
 	chart.addAxis("y", { vertical:true });
 	
-	            // connect browser resize to chart
+	// connect browser resize to chart
     dojo.connect(dijit.byId("chartPane"), "resize", this, function(evt){
         var dim = dijit.byId("chartPane")._contentBox;
 		chart.resize(dim.w, dim.h);

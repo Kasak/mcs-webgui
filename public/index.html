@@ -1,29 +1,94 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset=utf-8 />
-		<title>WebGUI</title>
-		<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/claro/claro.css">
-		<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojox/grid/resources/Grid.css">
-		<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojox/grid/resources/claroGrid.css">
-		<link rel="stylesheet" href="styles/styles.css">
-		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js" djConfig="parseOnLoad: false"></script>
-		<!--script type="text/javascript" src="scripts/dojo/dojo.js"></script-->
-		<script type="text/javascript" src="scripts/webgui/script.js"></script>
-	</head>
-	<body class="claro">
-		<div id="loader">
-			<div id="loaderInner" style="direction:ltr;">Loading application ... </div>
-		</div> 
-	    <div dojoType="dijit.layout.BorderContainer" id="borderContainer" design="sidebar" liveSplitters="false" gutters="false">
-			<div dojoType="dijit.layout.TabContainer" region="center">
-				<div dojoType="dijit.layout.ContentPane" title="AND Display" id = "ANDTableContainer"></div>
-				<div dojoType="dijit.layout.ContentPane" title="SCD Display" id="tableSCDContainer"></div>
-				<div id="chartPane" dojoType="dijit.layout.ContentPane" title="Graph display">
-					<div id="chartDiv" ></div>
-					<!--div id="chartLegend"></div-->
-				</div>
-			</div>
-		</div>
-	</body>
+    <head>
+        <meta charset=utf-8 />
+        <title>WebGUI</title>
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/claro/claro.css">
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojox/grid/resources/Grid.css">
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojox/grid/resources/claroGrid.css">
+        <link rel="stylesheet" type="text/css" href="styles/styles.css">
+        <link rel="stylesheet" type="text/css" href="styles/x3dom.css"/>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js" djConfig="parseOnLoad: false"></script>
+        <!--script type="text/javascript" src="scripts/dojo/dojo.js"></script-->
+        <script type="text/javascript" src="scripts/webgui/script.js"></script>
+
+    </head>
+    <body class="claro">
+        <div id="loader">
+            <div id="loaderInner" style="direction:ltr;">Loading application ... </div>
+        </div>
+        <div dojoType="dijit.layout.BorderContainer" id="borderContainer" design="sidebar" liveSplitters="false" gutters="false">
+            <div dojoType="dijit.layout.ContentPane" region="left" splitter="false" id="ParameterContainer" style="width: 200px;">
+                <p>Parameters:</p>
+                <form id="parameters">
+                    <input type="checkBox" dojoType="dijit.form.CheckBox" name="select all" id="selectAll" value="selectAll" />
+                    <label for="selectAll"> Select All </label><br/><br/>
+                </form>
+                <br/>
+            </div>
+
+            <div dojoType="dijit.layout.TabContainer" region="center">
+                <div dojoType="dijit.layout.ContentPane" title="AND Display" id ="ANDTableContainer"></div>
+                <div dojoType="dijit.layout.ContentPane" title="SCD Display" id="SCDTableContainer"></div>
+                <div dojoType="dijit.layout.ContentPane" title="Graph display" id="ChartContainer" >
+                    <div id="chartDiv" ></div>
+                    <!--div id="legend"></div-->
+                </div>
+                <div dojoType="dijit.layout.ContentPane" title="3D Display" id="3DContainer">
+
+                    <div class="viewbuttons">
+                         <input type="button" value="Close Camera" onclick="document.getElementById('closeCam').setAttribute('set_bind','true');"/>
+                         <input type="button" value="Far Camera" onclick="document.getElementById('farCam').setAttribute('set_bind','true');"/>
+                    </div>
+                    <div class="x3domContainer">
+                        <x3d showStat="false" showLog="false" x="0px" y="0px" width="600px" height="600px" altImg="">
+                            <scene def='scene'>
+                                <viewpoint id="closeCam" position="0 0 30000"></viewpoint>
+                                <viewpoint id="farCam" position="0 0 60000"></viewpoint>
+                                <background skycolor='1 1 1'></background>
+
+                                <transform def="globalTransform" rotation="0 0 1 -0.408407045">
+                                    <shape def='planet'>
+                                        <appearance>
+                                            <material diffusecolor="0.6 0.6 0.6" specularcolor="0.8 0.8 0.8" shininess="0.115" transparency="0.0" ></material>
+                                            <imagetexture url='images/textures/earth.jpg'></imagetexture>
+                                        </appearance>
+                                        <sphere radius="6371"></sphere>
+                                    </shape>
+                                    <shape>
+                                        <appearance>
+                                                <material diffuseColor="1 1 1"></material>
+                                                <ImageTexture url="images/textures/cloud.png"></ImageTexture>
+                                        </appearance>
+                                        <sphere radius="6500"></sphere>
+                                    </shape>
+                                    <transform id="satteliteTransform" def='satteliteTransform' translation="0 0 0" scale="25 25 25">
+                                        <Inline url="images/iss.x3d"></Inline>
+                                        <!--shape def='sattelite'>
+                                            <appearance>
+                                                <material diffusecolor='0.6 0.6 0.6' specularcolor='0.8 0.8 0.8' shininess='0.145' ></material>
+                                            </appearance>
+                                            <box></box>
+                                        </shape-->
+                                    </transform>
+                                </transform>
+
+                                <!--For global rotation-->
+                                <timesensor def='timer' cycleinterval='20' loop='true'></timesensor>
+                                <orientationinterpolator def='xrotation' key='0 0.5 1' keyvalue='0 0 0 0, 0 3.14 0 3.14, 0 6.28 0 6.28'></orientationinterpolator>
+                                <route fromnode='timer' fromfield='fraction_changed' tonode='xrotation' tofield='set_fraction'></route>
+                                <route fromnode='xrotation' fromfield='value_changed' tonode='globalTransform' tofield='rotation'></route>
+
+                            </scene>
+                        </x3d>
+                    </div>
+
+                    <script type="text/javascript"
+                            src="http://www.x3dom.org/x3dom/release/x3dom.js">
+                    </script>
+
+                </div>
+            </div>
+        </div>
+    </body>
 </html>
