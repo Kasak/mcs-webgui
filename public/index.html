@@ -41,11 +41,10 @@
                          <input type="button" value="Far Camera" onclick="document.getElementById('farCam').setAttribute('set_bind','true');"/>
                     </div>
                     <div class="x3domContainer">
-                        <x3d showStat="false" showLog="false" x="0px" y="0px" width="600px" height="600px" altImg="">
+                        <x3d id="x3dElement" showStat="false" showLog="false" x="0px" y="0px" width="600px" height="600px" altImg="">
                             <scene def='scene'>
-                                <viewpoint id="closeCam" position="0 0 30000"></viewpoint>
-                                <viewpoint id="farCam" position="0 0 60000"></viewpoint>
-                                <background skycolor='1 1 1'></background>
+                                <viewpoint id="closeCam" position="0 0 20000"></viewpoint>
+                                <viewpoint id="farCam" position="0 0 50000"></viewpoint>
 
                                 <transform def="globalTransform" rotation="0 0 1 -0.408407045">
                                     <shape def='planet'>
@@ -88,6 +87,7 @@
                     </script>
 
                 </div>
+                <div dojoType="dijit.layout.ContentPane" title="States Display" id="StatesTableContainer"></div>
             </div>
         </div>
     </body>

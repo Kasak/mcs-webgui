@@ -15,6 +15,14 @@ html, body { width: 100%;
     clear: both;
 }
 
+/*for colorCoding tables*/
+.stateTableFalse {
+    color: red;
+}
+.stateTableTrue {
+    color: forestgreen;
+}
+
 #borderContainer { width: 100%;
 		height: 100%;
                 overflow: visible;}
@@ -38,4 +46,8 @@ html, body { width: 100%;
 	    width:175px;
 	    background:#3c3;
 	    color:#fff;
-} 
+}
+
+#x3dElement {
+    background:#000 url(http://www.x3dom.org/x3dom/example/texture/solarSystem/starsbg.png);
+}

@@ -88,6 +88,8 @@ dojo.declare("GridPresentation", MixinObject, {
 		this.setGridStore = function(store) {
 			grid.setStore(store);
 		};
+            console.log(grid);
+            //grid.escapeHTMLInData = false;
 	  }
 });
 
@@ -551,6 +553,81 @@ function CartesianConverter() {
     }
 }
 
+/*States display*/
+dojo.declare("StatesParameterStore", ParameterStore, {
+	key: "key",
+        constructor: function() {
+		var store = this.getStore();
+		function parameterHandler (parameter) {
+			//console.log("[StateParameterStore] received " + JSON.stringify(parameter));
+
+                        if(parameter.Type !== "State") {
+                            return;
+                        }
+                        //constant into main class properties
+                        //console.log("[StateParameterStore] received " + JSON.stringify(parameter));
+
+			parameter.key = parameter.Name;
+                        parameter.State = '<div class="stateTable' +
+                                (parameter.Value == true ? "True" : "False") +
+                                '">' + parameter.Value + '</div>';
+
+			//AND display store logic
+			store.fetch({query: {key: parameter.Name},
+				onBegin: function(size, request){
+					if(size == 0){
+                                            store.newItem(parameter);
+					}
+				},
+				onItem: function(item){
+                                        store.setValue(item,"Name",parameter["Name"]);
+					store.setValue(item,"State",parameter["State"]);
+					store.setValue(item,"Timestamp",parameter["Timestamp"]);
+                                        store.setValue(item,"Description",parameter["Descripton"]);
+				},
+				onError: function(er) {
+					console.err(er);
+				}
+			});
+		}
+
+		var subscribeToTopic = function(subscription) {
+			dojo.subscribe(subscription.topic, parameterHandler);
+		};
+
+		dojo.subscribe("/request/subscribe", subscribeToTopic);
+	}
+});
+
+dojo.declare("StatesDataAbstraction", DataAbstraction, {
+	  constructor: function(args) {
+		this.parameterStore = new StatesParameterStore();
+	  }
+});
+
+dojo.declare("StatesController", MixinObject, {
+	divId: "StatesTable", //defaultId
+	constructor: function() {
+		var dataAbstraction = new StatesDataAbstraction();
+		new GridPresentation({
+		"divId": this.divId,
+		"configuration": {
+			"id": this.divId,
+			"store": dataAbstraction.getStore(),
+			"clientSort": true,
+			"updateDelay": 1000,
+                        "escapeHTMLInData": false,
+			"structure": [
+                                {"field": 'Name', "name": 'Name', "width": '200px'},
+				{"field": 'State', "name": 'State', "width": '100px'},
+				{"field": 'Timestamp', "name": 'Timestamp', "width": '100px'},
+                                {"field": 'Description', "name": 'Description', "width": '200px'},
+			]
+		}});
+	}
+});
+
+
 /*Parameter selection Display*/
 
 /**
@@ -570,6 +647,9 @@ dojo.declare("ParameterAbstraction", MixinObject, {
                dojo.connect(parameters, "addParameter", this, "updateViewCallback");
 
                 function parameterHandler(parameter) {
+                    if(parameter.Type !== "Parameter")
+                        return;
+
                    var newParam = true;
                     dojo.forEach(parameters.parameterNames, function(parameterName, i) {
                             if(parameterName == parameter.Name) {
@@ -607,6 +687,10 @@ dojo.declare("ParameterPresentation", MixinObject, {
         }
 
         this.updateViewCallback = function(name) {
+            if(!name) {
+                return;
+            }
+            
             var checkBox = new dijit.form.CheckBox({
                 name: name,
                 value: name,
@@ -643,18 +727,20 @@ dojo.declare("ParameterController", MixinObject, {
 	}
 });
 
-function Assembler() {
-	
-	function loadApplication() {
+dojo.declare("Assembler", MixinObject, {
+   cometdUrl: "http://127.0.0.1:8086/cometd", //default url for cometd
+   constructor: function() {
+
+       function loadApplication() {
 		var start = new Date().getTime();
 		dojo.parser.parse(dojo.byId('container'));
 		dojo.byId('loaderInner').innerHTML += " done.";
 	}
-	
+
 	function removeLoadingScreen() {
 	 setTimeout(function hideLoader(){
 		var loader = dojo.byId('loader');
-		dojo.fadeOut({node: loader, 
+		dojo.fadeOut({node: loader,
 				duration:500,
 				onEnd: function(){
 					loader.style.display = "none";
@@ -662,7 +748,7 @@ function Assembler() {
 		}).play();
 		}, 250);
 	}
-	
+
 	function initComet(url) {
 	    var io = dojox.cometd;
 		console.log("[ConnectionManager] connecting to " + url);
@@ -673,28 +759,35 @@ function Assembler() {
 	//initialize application javascript
 	loadApplication();
 	removeLoadingScreen();
-	//initialize Cometd connection 
-	initComet("http://127.0.0.1:8086/cometd");
+	//initialize Cometd connection
+	initComet(this.cometdUrl);
 	//initialize comet channel listeners...
-	
+
 	new CometListener();
         //new ParameterGenerator();
 	//initialize Agents...
-        //TODO subscription IS called, but something goes wrong :S
 	new ANDController({divId: "ANDTable"});
 	new SCDController({divId: "SCDTable"});
 	new GraphController();
         new X3DController();
+        new StatesController();
         //for handling all parameters
         new ParameterController();
 
 	//define channels what should be listened to
 	dojo.publish("/request/subscribe",[{"topic":"/parameter/live"}]);
-}
+        //dojo.publish("/request/subscribe",[{"topic":"/parameter/logs"}]);
+
+        function logOutput(param) {
+            console.log(param);
+        }
+        dojo.subscribe("/parameter/logs", logOutput);
+   }
+});
 
 /*initialisations*/
 dojo.addOnLoad(function() {
-	new Assembler();
+	new Assembler({cometdUrl: "http://127.0.0.1:8086/cometd"});
 });
 
 //Test function for local parameter generation
