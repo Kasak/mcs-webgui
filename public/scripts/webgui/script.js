@@ -20,6 +20,8 @@ dojo.require("dojox.charting.action2d.Tooltip");
 
 dojo.require("dijit.form.CheckBox");
 
+var msgbus = dojo.require("webgui.msgbus");
+
 /**
  * Basic object template for having mixing ability
  */
@@ -37,7 +39,7 @@ function CometListener() {
 	//Refactor the following to CometProxy !!!
     var publishToInnerBus = function(message) {
 		//console.log("[ConnectionManager] received " + JSON.stringify(message));
-		dojo.publish(message.channel,[message.data]);
+		msgbus.publish(message.channel,[message.data]);
     };
 	/*
 	dojo.forEach(topics, function(topic, i) {
@@ -60,7 +62,7 @@ function CometListener() {
 		});
     };
     
-    dojo.subscribe("/request/subscribe",subscribeToCometdTopic);   
+    msgbus.subscribe("/request/subscribe",subscribeToCometdTopic);   
 }
 
 
@@ -141,10 +143,10 @@ dojo.declare("ANDParameterStore", ParameterStore, {
 		
 		var subscribeToTopic = function(subscription) {
                         console.log("AndAbstraction subscription called with:");
-			dojo.subscribe(subscription.topic, parameterHandler);
+			msgbus.subscribe(subscription.topic, parameterHandler);
 		};
 
-		dojo.subscribe("/request/subscribe", subscribeToTopic);
+		msgbus.subscribe("/request/subscribe", subscribeToTopic);
 
                 //parameter hiding and showing
                 function addViewParameter(item) {
@@ -161,8 +163,8 @@ dojo.declare("ANDParameterStore", ParameterStore, {
 				}
 			});
                 }
-                dojo.subscribe("/viewparams/show", addViewParameter);
-                dojo.subscribe("/viewparams/hide", hideViewParameter);
+                msgbus.subscribe("/viewparams/show", addViewParameter);
+                msgbus.subscribe("/viewparams/hide", hideViewParameter);
 	}
 });
 
@@ -245,14 +247,14 @@ dojo.declare("SCDParameterStore", ParameterStore, {
                 /*
 		var subscribeToTopic = function(subscription) {
 			//console.log(this.updateViewCallback);
-			dojo.subscribe("/parameter/live", this, "parameterHandler");
+			msgbus.subscribe("/parameter/live", this, "parameterHandler");
 			dojo.connect(this, "parameterHandler", this, "updateViewCallback");
 		};
 
-		dojo.subscribe("/request/subscribe", subscribeToTopic);
+		msgbus.subscribe("/request/subscribe", subscribeToTopic);
 		*/
 		//TODO Make upper code work !
-		dojo.subscribe("/parameter/live", this.parameterHandler);
+		msgbus.subscribe("/parameter/live", this.parameterHandler);
 
                  //parameter hiding and showing
                 function addViewParameter(item) {
@@ -262,8 +264,8 @@ dojo.declare("SCDParameterStore", ParameterStore, {
                     viewParameters[item.parameter] = false;
                 }
 
-                dojo.subscribe("/viewparams/show", addViewParameter);
-                dojo.subscribe("/viewparams/hide", hideViewParameter);
+                msgbus.subscribe("/viewparams/show", addViewParameter);
+                msgbus.subscribe("/viewparams/hide", hideViewParameter);
 
 	}
 });
@@ -318,7 +320,7 @@ dojo.declare("SCDController", MixinObject, {
                     scdPresentation.setGridStructure(gridStructure);
                 }
                 //TODO, this should be done with connect like updateViewCallback
-                dojo.subscribe("/viewparams/hide", removeFromViewCallback);
+                msgbus.subscribe("/viewparams/hide", removeFromViewCallback);
 
 		var dataAbstraction = new SCDDataAbstraction({"updateViewCallback": updateViewCallback});
 		
@@ -428,7 +430,7 @@ dojo.declare("GraphController", MixinObject, {
                     });
                 }
                 //TODO, this should be done with connect like updateViewCallback
-                dojo.subscribe("/viewparams/hide", removeFromView);
+                msgbus.subscribe("/viewparams/hide", removeFromView);
 
                 // connect browser resize to chart
                 dojo.connect(dijit.byId("chartPane"), "resize", this, function(evt){
@@ -478,10 +480,10 @@ dojo.declare("X3DDataAbstraction", MixinObject, {
 
                 //listens to topics to all channels broadcast to currently
 		var subscribeToTopic = function(subscription) {
-			dojo.subscribe(subscription.topic, parameterHandler);
+			msgbus.subscribe(subscription.topic, parameterHandler);
 		};
 
-		dojo.subscribe("/request/subscribe",subscribeToTopic);
+		msgbus.subscribe("/request/subscribe",subscribeToTopic);
 
 
 	}
@@ -592,10 +594,10 @@ dojo.declare("StatesParameterStore", ParameterStore, {
 		}
 
 		var subscribeToTopic = function(subscription) {
-			dojo.subscribe(subscription.topic, parameterHandler);
+			msgbus.subscribe(subscription.topic, parameterHandler);
 		};
 
-		dojo.subscribe("/request/subscribe", subscribeToTopic);
+		msgbus.subscribe("/request/subscribe", subscribeToTopic);
 	}
 });
 
@@ -664,10 +666,10 @@ dojo.declare("ParameterAbstraction", MixinObject, {
 
                 //listens to topics to all channels broadcast to currently
 		var subscribeToTopic = function(subscription) {
-                   dojo.subscribe(subscription.topic, parameterHandler);
+                   msgbus.subscribe(subscription.topic, parameterHandler);
 		};
 
-		dojo.subscribe("/request/subscribe",subscribeToTopic);
+		msgbus.subscribe("/request/subscribe",subscribeToTopic);
 	}
 });
 
@@ -697,9 +699,9 @@ dojo.declare("ParameterPresentation", MixinObject, {
                 checked: false,
                 onChange: function(parameter) {
                     if(parameter) {
-                        dojo.publish("/viewparams/show",[{"parameter": checkBox.attr('name')}]);
+                        msgbus.publish("/viewparams/show",[{"parameter": checkBox.attr('name')}]);
                     } else {
-                        dojo.publish("/viewparams/hide",[{"parameter": checkBox.attr('name')}]);
+                        msgbus.publish("/viewparams/hide",[{"parameter": checkBox.attr('name')}]);
                     }
                 }
             }, name);
@@ -775,13 +777,13 @@ dojo.declare("Assembler", MixinObject, {
         new ParameterController();
 
 	//define channels what should be listened to
-	dojo.publish("/request/subscribe",[{"topic":"/parameter/live"}]);
-        //dojo.publish("/request/subscribe",[{"topic":"/parameter/logs"}]);
+	msgbus.publish("/request/subscribe",[{"topic":"/parameter/live"}]);
+        //msgbus.publish("/request/subscribe",[{"topic":"/parameter/logs"}]);
 
         function logOutput(param) {
             console.log(param);
         }
-        dojo.subscribe("/parameter/logs", logOutput);
+        msgbus.subscribe("/parameter/logs", logOutput);
    }
 });
 
@@ -802,6 +804,6 @@ function ParameterGenerator() {
 		param.Value = generateValue(105);
 		param.Type = "java.lang.String";
 		param.Timestamp = new Date().getTime();
-		dojo.publish("/parameter/live", [param]);
+		msgbus.publish("/parameter/live", [param]);
 	}, 500);
 }

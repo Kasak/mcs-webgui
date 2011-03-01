@@ -3,13 +3,17 @@
     <head>
         <meta charset=utf-8 />
         <title>WebGUI</title>
-        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/claro/claro.css">
-        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojox/grid/resources/Grid.css">
-        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojox/grid/resources/claroGrid.css">
+        <link rel="stylesheet" type="text/css" href="scripts/dojo1.5/dijit/themes/claro/claro.css">
+        <link rel="stylesheet" type="text/css" href="scripts/dojo1.5/dojox/grid/resources/Grid.css">
+        <link rel="stylesheet" type="text/css" href="scripts/dojo1.5/dojox/grid/resources/claroGrid.css">
         <link rel="stylesheet" type="text/css" href="styles/styles.css">
         <link rel="stylesheet" type="text/css" href="styles/x3dom.css"/>
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js" djConfig="parseOnLoad: false"></script>
-        <!--script type="text/javascript" src="scripts/dojo/dojo.js"></script-->
+        <!-- <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js" djConfig="parseOnLoad: false"></script> -->
+		<!-- <script type="text/javascript" src="http://www.x3dom.org/x3dom/release/x3dom.js"></script> -->
+        <script type="text/javascript" src="scripts/dojo1.5/dojo/dojo.js" djConfig="parseOnLoad: false"></script>
+		<script type="text/javascript">
+			dojo.registerModulePath("webgui","../../webgui");
+		</script>		
         <script type="text/javascript" src="scripts/webgui/script.js"></script>
 
     </head>
@@ -81,11 +85,6 @@
                             </scene>
                         </x3d>
                     </div>
-
-                    <script type="text/javascript"
-                            src="http://www.x3dom.org/x3dom/release/x3dom.js">
-                    </script>
-
                 </div>
                 <div dojoType="dijit.layout.ContentPane" title="States Display" id="StatesTableContainer"></div>
             </div>
