@@ -79,7 +79,12 @@ dojo.declare("GridPresentation", MixinObject, {
 	  
 		// Call startup, in order to render the grid:
 		grid.startup();
-		
+
+                //to scroll to the bottom row of the grid
+                this.scrollToGridBottom = function() {
+                  grid.scrollToRow(grid.rowCount);
+                };
+
 		/*for managing grid layout on the fly*/
 		this.setGridStructure = function(structure) {
 			grid.setStructure(structure);
@@ -88,8 +93,6 @@ dojo.declare("GridPresentation", MixinObject, {
 		this.setGridStore = function(store) {
 			grid.setStore(store);
 		};
-            console.log(grid);
-            //grid.escapeHTMLInData = false;
 	  }
 });
 
@@ -205,7 +208,7 @@ dojo.declare("SCDParameterStore", ParameterStore, {
 		var store = this.getStore();		
 		//for removing from store TODO refactor
 		var counter = 0;
-		var limit = 20;
+		var limit = 40;
 		
 		this.parameterHandler = function(parameter) {
                         //console.log("[ANDParameterStore] received " + JSON.stringify(parameter));
@@ -311,6 +314,9 @@ dojo.declare("SCDController", MixinObject, {
 				gridStructure.push({"field": parameter.Name + "Value", "name": parameter.Name, "width":  "120px"});
 				scdPresentation.setGridStructure(gridStructure);
 			}
+                        //scroll to the bottom of the list
+                        scdPresentation.scrollToGridBottom()
+
 		};
 
                 var removeFromViewCallback = function(parameter) {
@@ -490,9 +496,11 @@ dojo.declare("X3DDataAbstraction", MixinObject, {
 dojo.declare("X3DPresentation", MixinObject, {
     constructor: function() {
         var satTransform = dojo.byId("satteliteTransform");
+        var satRotation = dojo.byId("satteliteRotation");
 
-        this.refreshView = function(coordinates) {
-            dojo.attr(satTransform, "translation", coordinates);
+        this.refreshView = function(item) {
+            dojo.attr(satTransform, "translation", item.CartesianCoordinates);
+            //dojo.attr(satRotation, "rotation", item.RotationQuaternion);
         }
     }
 });
@@ -548,8 +556,12 @@ function CartesianConverter() {
         var x = elevation * cosFi * cosLambda;
         var y = elevation * cosFi * sinLambda;
         var z = elevation * sinFi;
+        item.CartesianCoordinates = (y) + " " + z + " " + x;
 
-        return (y) + " " + z + " " + x;
+        //set rotation, maybe not the best place to do it ?
+        item.RotationQuaternion = " 0 0 1 " + (radLongitude);
+
+        return item;
     }
 }
 
@@ -776,9 +788,9 @@ dojo.declare("Assembler", MixinObject, {
 
 	//define channels what should be listened to
 	dojo.publish("/request/subscribe",[{"topic":"/parameter/live"}]);
-        //dojo.publish("/request/subscribe",[{"topic":"/parameter/logs"}]);
+        dojo.publish("/request/subscribe",[{"topic":"/parameter/logs"}]);
 
-        function logOutput(param) {
+        var logOutput = function logOutput(param) {
             console.log(param);
         }
         dojo.subscribe("/parameter/logs", logOutput);

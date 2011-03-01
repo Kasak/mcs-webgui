@@ -46,29 +46,34 @@
                                 <viewpoint id="closeCam" position="0 0 20000"></viewpoint>
                                 <viewpoint id="farCam" position="0 0 50000"></viewpoint>
 
-                                <transform def="globalTransform" rotation="0 0 1 -0.408407045">
-                                    <shape def='planet'>
-                                        <appearance>
-                                            <material diffusecolor="0.6 0.6 0.6" specularcolor="0.8 0.8 0.8" shininess="0.115" transparency="0.0" ></material>
-                                            <imagetexture url='images/textures/earth.jpg'></imagetexture>
-                                        </appearance>
-                                        <sphere radius="6371"></sphere>
-                                    </shape>
-                                    <shape>
-                                        <appearance>
-                                                <material diffuseColor="1 1 1"></material>
-                                                <ImageTexture url="images/textures/cloud.png"></ImageTexture>
-                                        </appearance>
-                                        <sphere radius="6500"></sphere>
-                                    </shape>
-                                    <transform id="satteliteTransform" def='satteliteTransform' translation="0 0 0" scale="25 25 25">
-                                        <Inline url="images/iss.x3d"></Inline>
-                                        <!--shape def='sattelite'>
+                                <transform def="outer" rotation="0 0 1 -0.408407045">
+                                    <transform def="globalTransform">
+                                        <shape def='planet'>
                                             <appearance>
-                                                <material diffusecolor='0.6 0.6 0.6' specularcolor='0.8 0.8 0.8' shininess='0.145' ></material>
+                                                <material diffusecolor="0.6 0.6 0.6" specularcolor="0.8 0.8 0.8" shininess="0.115" transparency="0.0" ></material>
+                                                <imagetexture url='images/textures/earth2.jpg'></imagetexture>
                                             </appearance>
-                                            <box></box>
-                                        </shape-->
+                                            <sphere radius="6371"></sphere>
+                                        </shape>
+                                        <shape>
+                                            <appearance>
+                                                    <ImageTexture url="images/textures/cloud.png"></ImageTexture>
+                                            </appearance>
+                                            <sphere radius="6571"></sphere>
+                                        </shape>
+                                        <!--TODO autoupdate rotation-->
+                                        <transform id="satteliteRotation" def="satteliteRotation"  rotation="0 0 0 0">
+                                            <transform id="satteliteTransform" def='satteliteTransform' translation="0 0 0" scale="25 25 25">
+                                                <Inline url="images/iss.x3d"></Inline>
+                                                <!--shape def='sattelite'>
+                                                    <appearance>
+                                                        <material diffusecolor='0.6 0.6 0.6' specularcolor='0.8 0.8 0.8' shininess='0.145' ></material>
+                                                    </appearance>
+                                                    <box></box>
+                                                </shape-->
+                                            </transform>
+                                        </transform>
+
                                     </transform>
                                 </transform>
 
