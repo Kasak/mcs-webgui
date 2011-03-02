@@ -17,7 +17,7 @@ dojo.require("dojox.charting.action2d.Tooltip");
 dojo.require("dijit.form.CheckBox");
 
 var msgbus = dojo.require("webgui.msgbus");
-dojo.require("webgui.comm.CometProxy");
+dojo.require("webgui.assembly.Assembler");
 
 /**
  * Basic object template for having mixing ability
@@ -703,59 +703,10 @@ dojo.declare("ParameterController", MixinObject, {
 	}
 });
 
-dojo.declare("Assembler", MixinObject, {
-   constructor: function() {
-
-       function loadApplication() {
-		var start = new Date().getTime();
-		dojo.parser.parse(dojo.byId('container'));
-		dojo.byId('loaderInner').innerHTML += " done.";
-	}
-
-	function removeLoadingScreen() {
-	 setTimeout(function hideLoader(){
-		var loader = dojo.byId('loader');
-		dojo.fadeOut({node: loader,
-				duration:500,
-				onEnd: function(){
-					loader.style.display = "none";
-				}
-		}).play();
-		}, 250);
-	}
-
-	//initialize application javascript
-	loadApplication();
-	removeLoadingScreen();
-	
-	//comet proxy TODO: add generic comm proxy class
-	new webgui.comm.CometProxy({cometdUrl: "http://127.0.0.1:8086/cometd"});
-	
-    //new ParameterGenerator();
-	//initialize Agents...
-	new ANDController({divId: "ANDTable"});
-	new SCDController({divId: "SCDTable"});
-	new GraphController();
-        new X3DController();
-        new StatesController();
-        //for handling all parameters
-        new ParameterController();
-
-	//define channels what should be listened to
-	msgbus.publish("/request/subscribe",[{"topic":"/parameter/live"}]);
-    msgbus.publish("/request/subscribe",[{"topic":"/parameter/logs"}]);
-
-
-        var logOutput = function logOutput(param) {
-            console.log(param);
-        }
-        msgbus.subscribe("/parameter/logs", logOutput);
-   }
-});
-
 /*initialisations*/
 dojo.addOnLoad(function() {
-	new Assembler();
+	var assembler = new webgui.assembly.Assembler();
+	assembler.loadAssembly(); // TODO maybe better to call this from within Assembler??
 });
 
 //Test function for local parameter generation
