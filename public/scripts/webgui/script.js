@@ -8,10 +8,6 @@ dojo.require("dojox.grid.DataGrid");
 //Stores
 dojo.require("dojo.data.ItemFileWriteStore");
 
-//Cometd for CometProxy
-dojo.require("dojox.cometd");
-dojo.require("dojox.cometd.longPollTransport");
-
 //For Chart Views
 dojo.require("dojox.charting.widget.Chart2D");
 dojo.require("dojox.charting.widget.Legend");
@@ -21,6 +17,7 @@ dojo.require("dojox.charting.action2d.Tooltip");
 dojo.require("dijit.form.CheckBox");
 
 var msgbus = dojo.require("webgui.msgbus");
+dojo.require("webgui.comm.CometProxy");
 
 /**
  * Basic object template for having mixing ability
@@ -30,41 +27,6 @@ dojo.declare("MixinObject", null, {
 		dojo.safeMixin(this, args);
 	  }
 });
-
-/**
- * Refactor, currently this class'es code is called by a subscription bus, bu it might not be the best idea ...
- */
-function CometListener() {
-	var io = dojox.cometd;
-	//Refactor the following to CometProxy !!!
-    var publishToInnerBus = function(message) {
-		//console.log("[ConnectionManager] received " + JSON.stringify(message));
-		msgbus.publish(message.channel,[message.data]);
-    };
-	/*
-	dojo.forEach(topics, function(topic, i) {
-		var handle = io.subscribe(topic, publishToInnerBus);
-		handle.addCallback(function(){
-			console.log("[ConnectionManager] subscription to "+ handle.args[0] + " established");
-		});
-	});
-	*/
-	
-	/**
-	*  CometListener listenes internal dojo channel "request/subscribe" for topics.
-	*  If a topic is requested, this function is called, which in turn subscribes to the requested topic on cometd message-bus.
-	*  @param subscription The  subscription message
-	*/
-	var subscribeToCometdTopic = function(subscription) {
-		var handle = io.subscribe(subscription.topic, publishToInnerBus);
-		handle.addCallback(function(){
-			console.log("[ConnectionManager] subscription to "+ handle.args[0] + " established");
-		});
-    };
-    
-    msgbus.subscribe("/request/subscribe",subscribeToCometdTopic);   
-}
-
 
 dojo.declare("DataAbstraction", MixinObject, {
 	getStore: function() {
@@ -730,7 +692,6 @@ dojo.declare("ParameterController", MixinObject, {
 });
 
 dojo.declare("Assembler", MixinObject, {
-   cometdUrl: "http://127.0.0.1:8086/cometd", //default url for cometd
    constructor: function() {
 
        function loadApplication() {
@@ -751,22 +712,14 @@ dojo.declare("Assembler", MixinObject, {
 		}, 250);
 	}
 
-	function initComet(url) {
-	    var io = dojox.cometd;
-		console.log("[ConnectionManager] connecting to " + url);
-		io.init(url);
-	}
-
-
 	//initialize application javascript
 	loadApplication();
 	removeLoadingScreen();
-	//initialize Cometd connection
-	initComet(this.cometdUrl);
-	//initialize comet channel listeners...
-
-	new CometListener();
-        //new ParameterGenerator();
+	
+	//comet proxy TODO: add generic comm proxy class
+	new webgui.comm.CometProxy({cometdUrl: "http://127.0.0.1:8086/cometd"});
+	
+    //new ParameterGenerator();
 	//initialize Agents...
 	new ANDController({divId: "ANDTable"});
 	new SCDController({divId: "SCDTable"});
@@ -789,7 +742,7 @@ dojo.declare("Assembler", MixinObject, {
 
 /*initialisations*/
 dojo.addOnLoad(function() {
-	new Assembler({cometdUrl: "http://127.0.0.1:8086/cometd"});
+	new Assembler();
 });
 
 //Test function for local parameter generation
