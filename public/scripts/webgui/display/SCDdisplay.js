@@ -1,17 +1,27 @@
-﻿dojo.declare("SCDParameterStore", ParameterStore, {
-	key: 'Timestamp',
-	parameterHandler: {}, 
+﻿dojo.provide("webgui.display.SCDdisplay");
+dojo.require("webgui.pac.Controller");
+dojo.require("webgui.pac.Abstraction");
+dojo.require("webgui.pac.GridPresentation");
+//Stores
+dojo.require("dojo.data.ItemFileWriteStore");
+
+dojo.declare("SCDAbstraction", webgui.pac.Abstraction, {
 	constructor: function() {
-		var viewParameters = {};
-		var store = this.getStore();		
+		var key = 'Timestamp';
+		var storedata = {identifier: key, items: []};
+		var store = new dojo.data.ItemFileWriteStore({data:storedata});
+		var viewParameters = [];
+		this.getStore = function(){
+			return store;
+		};		
 		//for removing from store TODO refactor
 		var counter = 0;
 		var limit = 40;
 		
-		this.parameterHandler = function(parameter) {
-                        //console.log("[ANDParameterStore] received " + JSON.stringify(parameter));
-                        if(!viewParameters[parameter.Name] || viewParameters[parameter.Name] === false)
-                            return;
+		function parameterHandler(parameter) {
+			//console.log("[ANDParameterStore] received " + JSON.stringify(parameter));
+			if(!viewParameters[parameter.Name] || viewParameters[parameter.Name] === false)
+				return;
 
 			//init new timestamp store element, as we don't really require all parameter stuff
 			var storeElem = {};
@@ -39,7 +49,7 @@
 			
 			/*refactor/*/
 		}
-                //TODO not a good idea to update the view constantly
+        //TODO not a good idea to update the view constantly
 		dojo.connect(store, "newItem", this, "updateViewCallback");
 		
 		//subscribe to internal topics dynamically, when they are added to the subscription lists
@@ -53,29 +63,23 @@
 		msgbus.subscribe("/request/subscribe", subscribeToTopic);
 		*/
 		//TODO Make upper code work !
-		msgbus.subscribe("/parameter/live", this.parameterHandler);
+		msgbus.subscribe("/parameter/live", parameterHandler);
 
-                 //parameter hiding and showing
-                function addViewParameter(item) {
-                    viewParameters[item.parameter] = true;
-                }
-                function hideViewParameter(item) {
-                    viewParameters[item.parameter] = false;
-                }
+		 //parameter hiding and showing
+		function addViewParameter(item) {
+			viewParameters[item.parameter] = true;
+		}
+		function hideViewParameter(item) {
+			viewParameters[item.parameter] = false;
+		}
 
-                msgbus.subscribe("/viewparams/show", addViewParameter);
-                msgbus.subscribe("/viewparams/hide", hideViewParameter);
+		msgbus.subscribe("/viewparams/show", addViewParameter);
+		msgbus.subscribe("/viewparams/hide", hideViewParameter);
 
 	}
 });
 
-dojo.declare("SCDDataAbstraction", DataAbstraction, {
-	  constructor: function(args) {
-		this.parameterStore = new SCDParameterStore({"updateViewCallback": this.updateViewCallback});
-	  }
-});
-
-dojo.declare("SCDController", MixinObject, {
+dojo.declare("SCDController", webgui.pac.Controller, {
 	divId: "SCDTable", //defaultId
 	columnLimit: 5, //maximum number of parameters shown, based on order recieved
 	constructor: function() {
@@ -83,14 +87,14 @@ dojo.declare("SCDController", MixinObject, {
 				{"field": "Timestamp", "name": "Timestamp", "width": "100px"}
 		];
 		
-		var scdPresentation =  new GridPresentation({
+		var scdPresentation =  new webgui.pac.GridPresentation({
 		"divId": this.divId,
 		"configuration": {
 			"id": this.divId,
 			//"store": dataAbstraction.getStore(),
 			"clientSort": true,
 			"structure": gridStructure,
-			"updateDelay": 1000
+			//"updateDelay": 1000
 		}});
 		
 		/**
@@ -98,7 +102,7 @@ dojo.declare("SCDController", MixinObject, {
 		* It is connected to the parameterStore parameterHandler function
 		* @param parameter The object coming from the subscribed channel
 		*/
-               //TODO maybe THIS should also store the info and update only at a set interval !!!
+        //TODO maybe THIS should also store the info and update only at a set interval !!!
 		var updateViewCallback = function(parameter) {
 			//look if, the column already exists
 			var nameExists = false;
@@ -112,20 +116,25 @@ dojo.declare("SCDController", MixinObject, {
 				gridStructure.push({"field": parameter.Name + "Value", "name": parameter.Name, "width":  "120px"});
 				scdPresentation.setGridStructure(gridStructure);
 			}
-                        //scroll to the bottom of the list
-                        scdPresentation.scrollToGridBottom()
-
+			//scroll to the bottom of the list
+			scdPresentation.scrollToGridBottom();
 		};
 
-                var removeFromViewCallback = function(parameter) {
-                    gridStructure.splice(gridStructure.indexOf(parameter.Name),1);
-                    scdPresentation.setGridStructure(gridStructure);
-                }
-                //TODO, this should be done with connect like updateViewCallback
-                msgbus.subscribe("/viewparams/hide", removeFromViewCallback);
+        var removeFromViewCallback = function(parameter) {
+			gridStructure.splice(gridStructure.indexOf(parameter.Name),1);
+			scdPresentation.setGridStructure(gridStructure);
+		}
+        //TODO, this should be done with connect like updateViewCallback
+        msgbus.subscribe("/viewparams/hide", removeFromViewCallback);
 
-		var dataAbstraction = new SCDDataAbstraction({"updateViewCallback": updateViewCallback});
+		var dataAbstraction = new SCDAbstraction({"updateViewCallback": updateViewCallback});
 		
 		scdPresentation.setGridStore(dataAbstraction.getStore());
+	}
+});
+dojo.declare("webgui.display.SCDdisplay",null,{
+	constructor: function(){
+		console.log("[ANDdisplay] initializing components..");
+		var controller = new SCDController();
 	}
 });

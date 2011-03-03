@@ -1,16 +1,14 @@
 ﻿dojo.provide("webgui.display.ANDdisplay");
 dojo.require("webgui.pac.Controller");
 dojo.require("webgui.pac.Abstraction");
-dojo.require("webgui.pac.Presentation");
+dojo.require("webgui.pac.GridPresentation");
 //Stores
 dojo.require("dojo.data.ItemFileWriteStore");
-//Grid Presentatons
-dojo.require("dojox.grid.DataGrid");
 
 dojo.declare("ANDAbstraction", webgui.pac.Abstraction, {	
 	  constructor: function(args) {
 		var key = 'key';
-		var storedata = {identifier: key, items: []}
+		var storedata = {identifier: key, items: []};
 		var store = new dojo.data.ItemFileWriteStore({data:storedata});
 		var viewParameters = [];
 		this.getStore = function(){
@@ -44,7 +42,6 @@ dojo.declare("ANDAbstraction", webgui.pac.Abstraction, {
 		}
 		
 		var subscribeToTopic = function(subscription) {
-			console.log("AndAbstraction subscription called with:");
 			msgbus.subscribe(subscription.topic, parameterHandler);
 		};
 
@@ -70,40 +67,11 @@ dojo.declare("ANDAbstraction", webgui.pac.Abstraction, {
 	  }
 });
 
-dojo.declare("GridPresentation", webgui.pac.Presentation, {
-	  constructor: function() {
-		var grid = new dojox.grid.DataGrid(this.configuration, document.createElement('div'));
-		// append the new grid to the container div:
-		dojo.byId(this.divId + "Container").appendChild(grid.domNode);
-	  
-		// Call startup, in order to render the grid:
-		grid.startup();
-
-		//to scroll to the bottom row of the grid
-		this.scrollToGridBottom = function() {
-		  grid.scrollToRow(grid.rowCount);
-		};
-
-		/*for managing grid layout on the fly*/
-		this.setGridStructure = function(structure) {
-			grid.setStructure(structure);
-		};
-
-		this.setGridStore = function(store) {
-			grid.setStore(store);
-		};
-	  }
-});
-
-
 dojo.declare("ANDController", webgui.pac.Controller,{
 	divId: "ANDTable", //defaultId
 	constructor: function() {
-		console.log("creating new AND abtsraction");
 		var dataAbstraction = new ANDAbstraction();
-		//ANDpresentation
-		console.log("creating new AND presentation");
-		new GridPresentation({
+		new webgui.pac.GridPresentation({
 		"divId": this.divId,
 		"configuration": {
 			"id": this.divId,

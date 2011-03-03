@@ -3,6 +3,10 @@ dojo.require("webgui.msgbus");
 dojo.require("webgui.comm.CometProxy");
 
 dojo.require("webgui.display.ANDdisplay");
+dojo.require("webgui.display.StateDisplay");
+dojo.require("webgui.display.SCDdisplay");
+dojo.require("webgui.display.GRAPHdisplay");
+dojo.require("webgui.display.DDDdisplay");
 
 dojo.declare("webgui.assembly.Assembler",null,{
 	loadAssembly: function(){
@@ -25,10 +29,10 @@ dojo.declare("webgui.assembly.Assembler",null,{
 		//new ParameterGenerator();
 		//initialize Agents...
 		new webgui.display.ANDdisplay();
-		//new SCDController({divId: "SCDTable"});
-		//new GraphController();
-		//new X3DController();
-		//new StatesController();
+		new webgui.display.SCDdisplay();
+		new webgui.display.GRAPHdisplay();
+		new webgui.display.DDDdisplay();
+		new webgui.display.StateDisplay();
 		//for handling all parameters
 		new ParameterController();
 		
