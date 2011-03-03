@@ -2,6 +2,8 @@
 dojo.require("webgui.msgbus");
 dojo.require("webgui.comm.CometProxy");
 
+dojo.require("webgui.display.ANDdisplay");
+
 dojo.declare("webgui.assembly.Assembler",null,{
 	loadAssembly: function(){
 		// TODO load from a config file??
@@ -18,14 +20,15 @@ dojo.declare("webgui.assembly.Assembler",null,{
 		}, 250);
 		
 		//comet proxy TODO: add generic comm proxy class
+		
 		new webgui.comm.CometProxy({cometdUrl: "http://127.0.0.1:8086/cometd"});
 		//new ParameterGenerator();
 		//initialize Agents...
-		new ANDController({divId: "ANDTable"});
-		new SCDController({divId: "SCDTable"});
-		new GraphController();
-		new X3DController();
-		new StatesController();
+		new webgui.display.ANDdisplay();
+		//new SCDController({divId: "SCDTable"});
+		//new GraphController();
+		//new X3DController();
+		//new StatesController();
 		//for handling all parameters
 		new ParameterController();
 		
@@ -37,7 +40,6 @@ dojo.declare("webgui.assembly.Assembler",null,{
 			console.log(param);
 		}
 		webgui.msgbus.subscribe("/parameter/logs", logOutput);
-		
 	},
 
 });
