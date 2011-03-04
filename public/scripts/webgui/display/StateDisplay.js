@@ -1,6 +1,10 @@
 ﻿/*States display*/
 dojo.provide("webgui.display.StateDisplay");
-
+dojo.require("webgui.pac.Controller");
+dojo.require("webgui.pac.Abstraction");
+dojo.require("webgui.pac.GridPresentation");
+//Stores
+dojo.require("dojo.data.ItemFileWriteStore");
 
 dojo.declare("StatesAbstraction", webgui.pac.Abstraction, {
 	constructor: function(args) {
@@ -46,7 +50,7 @@ dojo.declare("StatesAbstraction", webgui.pac.Abstraction, {
 	}
 });
 
-dojo.declare("StatesController", null, {
+dojo.declare("StatesController", webgui.pac.Controller, {
 	divId: "StatesTable", //defaultId
 	constructor: function() {
 		var dataAbstraction = new StatesAbstraction();
