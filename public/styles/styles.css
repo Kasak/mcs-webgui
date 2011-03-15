@@ -51,3 +51,53 @@ html, body { width: 100%;
 #x3dElement {
     background:#000 url(http://www.x3dom.org/x3dom/example/texture/solarSystem/starsbg.png);
 }
+
+.dojoDndItem { 
+	padding:3px; 
+}
+
+.dojoDndItemOver {
+	background-color: #ededed;
+	cursor:pointer;
+}
+
+.dojoDndItemSelected {
+	background-color: #5bbdea; color: #444;
+}
+
+.dojoDndItemAnchor {
+	background-color: #5bbdea; color: black;
+}
+
+.dojoDndItemOver .dojoDndItemSelected {
+	background-color: #ededed;
+}
+
+.dojoDndItemOver .dojoDndItemAnchor {
+	background-color: #ededed;
+}
+
+.dojoDndItemBefore {
+	border-top: 2px solid #369;
+}
+
+.dojoDndItemAfter {
+	border-bottom: 2px solid #369;
+}
+
+.dojoDndAvatar {
+	border:2px solid #ccc;
+}
+	
+.dojoDndAvatarHeader {
+	background-color: #aaa;
+}
+
+.dojoDndAvatarItem {
+	background-color: #fff;
+	border-bottom:1px solid #666;
+}
+
+.dojoDndAvatarItem .itemText {
+	font-size: 120%;
+}

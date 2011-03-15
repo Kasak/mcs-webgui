@@ -54,8 +54,7 @@ dojo.declare("GRAPHAbstraction", webgui.pac.Abstraction, {
 			
 			/*refactor/*/
 		}
-        //TODO not a good idea to update the view constantly
-		dojo.connect(store, "newItem", this, "updateViewCallback");
+        
 		
 		//subscribe to internal topics dynamically, when they are added to the subscription lists
                 /*
@@ -64,11 +63,12 @@ dojo.declare("GRAPHAbstraction", webgui.pac.Abstraction, {
 			msgbus.subscribe("/parameter/live", this, "parameterHandler");
 			dojo.connect(this, "parameterHandler", this, "updateViewCallback");
 		};
+*/
+		var subscribeToTopic = function(subscription) {
+			msgbus.subscribe(subscription.topic, parameterHandler);
+		};
 
 		msgbus.subscribe("/request/subscribe", subscribeToTopic);
-		*/
-		//TODO Make upper code work !
-		msgbus.subscribe("/parameter/live", parameterHandler);
 
 		 //parameter hiding and showing
 		function addViewParameter(item) {
@@ -83,16 +83,19 @@ dojo.declare("GRAPHAbstraction", webgui.pac.Abstraction, {
 
 	}
 });
-//TODO: Refactor into parts, after parameter change boxes are done
-dojo.declare("GRAPHController", webgui.pac.Controller, {
-        updateInterval: 500, //update interval in milliseconds
-	divId: "chartDiv", //defaultId
-	constructor: function() {
-		var chart = new dojox.charting.Chart2D(this.divId);
-
-                //Add the plot area at an offset of 10 pixels from the top left
-                
-                //chart.plotArea = {height: 800, width: 800};
+dojo.declare("GRAPHPresentation",webgui.pac.Presentation, {
+	updateInterval: 500, //update interval in milliseconds
+	domId:null,
+	constructor: function(){
+	console.log("creating new chart in " + this.domId);
+		var chart = new dojox.charting.Chart2D(this.domId);
+		this.getChart = function(){
+			return chart;
+		};
+		
+		//Add the plot area at an offset of 10 pixels from the top left
+		
+		//chart.plotArea = {height: 800, width: 800};
 
 		chart.addPlot("default", {
 			//type of chart
@@ -105,25 +108,70 @@ dojo.declare("GRAPHController", webgui.pac.Controller, {
 		});
 		chart.addAxis("x");
 		chart.addAxis("y", {vertical:true});
-
-                chart.resize(800, 400);
+		chart.resize(800, 400);
 		
 		// connect browser resize to chart
 		dojo.connect(dijit.byId("chartPane"), "resize", this, function(evt) {
 			var dim = dijit.byId("chartPane")._contentBox;
 			chart.resize(dim.w, dim.h);
-		});
-		
-		
+		});		
 		new dojox.charting.action2d.Magnify(chart, "default");
 		new dojox.charting.action2d.Tooltip(chart, "default");
+		
+		
+				//update View at set interval
+		var legend;
+		var chartContainer = dojo.byId("ChartContainer");
+		
+		var updateView = function() {
+			chart.render();
+			//legend
+			if(legend) {
+				legend.destroy();
+			}
+			chartContainer.appendChild(dojo.create("div", {id: "legend"}));
+			legend = new dojox.charting.widget.Legend({chart:chart}, "legend");
 
-                /*get the right plot of the series, also truncates the series for scrolling*/
-                var historyLimit = 100; //the limit of datapoints TODO should be a mixinvariable, but then this function can't access this
-                var getSeriesData = function(itemName) {
-                    	var seriesExists = false;
+		};
+		setInterval(updateView, this.updateInterval);		
+
+
+
+		// connect browser resize to chart
+		dojo.connect(dijit.byId("chartPane"), "resize", this, function(evt){
+			var dim = dijit.byId("chartPane")._contentBox;
+					chart.resize(dim.w, dim.h);
+		});
+	}
+});
+//TODO: Refactor into parts, after parameter change boxes are done
+dojo.declare("GRAPHController", webgui.pac.Controller, {
+    
+	divId: "chartDiv", //defaultId
+	constructor: function() {		
+		var dataAbstraction = new GRAPHAbstraction();
+		var presentation = new GRAPHPresentation({
+			"domId":this.divId
+		});
+		presentation = webgui.pac.DndTargetable(presentation,{
+			"isSource":false,
+			"creator":function creator(item,hint){
+				console.log("item creator");
+				console.log(item);
+				console.log("hint: "+hint);
+				var n = document.createElement("div");
+				msgbus.publish("/viewparams/show",[{parameter:item}]);
+				return {node: n, data: item};
+			}
+		});
+		
+		/*get the right plot of the series, also truncates the series for scrolling*/
+		var historyLimit = 100; //the limit of datapoints TODO should be a mixinvariable, but then this function can't access this
+		/*** This function should be refactored to access/retrieve data from abstraction ****/
+		var getSeriesData = function(itemName) {
+			var seriesExists = false;
 			var seriesArrayData;
-			dojo.forEach(chart.series, function(entry, key) {
+			dojo.forEach(presentation.getChart().series, function(entry, key) {
 				if(entry.name == itemName) {
 					seriesExists = true;
 					seriesArrayData = entry.data;
@@ -139,51 +187,28 @@ dojo.declare("GRAPHController", webgui.pac.Controller, {
 
                         return seriesArrayData;
                 }
-		
 		//to change chart as new items are added
-		function updateViewCallback(item) {
-
+		var updateViewCallback = function(item) {
             var seriesArrayData = getSeriesData(item.Name);
 			if(seriesArrayData === false) {
-				chart.addSeries(item.Name, [{"x":item["Timestamp"], "y":item[item["Name"] + "Value"]}]/*, {stroke: {color: "#FFFF00"}, fill: "#FFFF00"}*/);
+				presentation.getChart().addSeries(item.Name, [{"x":item["Timestamp"], "y":item[item["Name"] + "Value"]}]/*, {stroke: {color: "#FFFF00"}, fill: "#FFFF00"}*/);
 			} else {
 				seriesArrayData.push({"x":item["Timestamp"], "y":item[item["Name"] + "Value"]});
-				chart.updateSeries(item.Name, seriesArrayData);
+				presentation.getChart().updateSeries(item.Name, seriesArrayData);
 			}
-		}
-		var dataAbstraction = new GRAPHAbstraction({"updateViewCallback": updateViewCallback});
-		//update View at set interval
-		var legend;
-		var chartContainer = dojo.byId("ChartContainer");
+		};		
+		//TODO not a good idea to update the view constantly
+		dojo.connect(dataAbstraction.getStore(), "newItem", updateViewCallback);
 		
-		var updateView = function() {
-			chart.render();
-			//legend
-			if(legend) {
-				legend.destroy();
-			}
-			chartContainer.appendChild(dojo.create("div", {id: "legend"}));
-			legend = new dojox.charting.widget.Legend({chart:chart}, "legend");
-
-		};
-
-		setInterval(updateView, this.updateInterval);
-
 		var removeFromView = function(remove) {
 			dojo.forEach(chart.series, function(entry, key) {
 				if(entry && entry.name == remove.parameter) {
-					chart.removeSeries(remove.parameter);
+					presentation.getChart().removeSeries(remove.parameter);
 				}
 			});
 		}
 		//TODO, this should be done with connect like updateViewCallback
 		msgbus.subscribe("/viewparams/hide", removeFromView);
-
-		// connect browser resize to chart
-		dojo.connect(dijit.byId("chartPane"), "resize", this, function(evt){
-			var dim = dijit.byId("chartPane")._contentBox;
-					chart.resize(dim.w, dim.h);
-		});
 		
 	}
 });

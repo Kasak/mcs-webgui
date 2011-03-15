@@ -6,6 +6,7 @@
         <link rel="stylesheet" type="text/css" href="scripts/dojo1.5/dijit/themes/claro/claro.css">
         <link rel="stylesheet" type="text/css" href="scripts/dojo1.5/dojox/grid/resources/Grid.css">
         <link rel="stylesheet" type="text/css" href="scripts/dojo1.5/dojox/grid/resources/claroGrid.css">
+		<link rel="stylesheet" type="text/css" href="scripts/dojo1.5/dojo/resources/dnd.css">
         <link rel="stylesheet" type="text/css" href="styles/styles.css">
         <link rel="stylesheet" type="text/css" href="styles/x3dom.css"/>
         <!-- <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js" djConfig="parseOnLoad: false"></script> -->
@@ -23,16 +24,13 @@
         </div>
         <div dojoType="dijit.layout.BorderContainer" id="borderContainer" design="sidebar" liveSplitters="false" gutters="false">
 			<div dojoType="dijit.layout.AccordionContainer"  region="left" splitter="false" style="width:200px">
+				
 				<div dojoType="dijit.layout.ContentPane" id="TelemetryToolsContainer" title="Telemetry"></div>
 				<div dojoType="dijit.layout.ContentPane" id="CommandingToolsContainer" title="Commanding"></div>				
 			</div>
 			<div dojoType="dijit.layout.ContentPane" region="right" splitter="false" id="ParameterContainer" style="width:200px">
 				<p>Parameter filter</p>
-				<form id="parameters">
-					<input type="checkBox" dojoType="dijit.form.CheckBox" name="select all" id="selectAll" value="selectAll" />
-					<label for="selectAll"> Select All </label><br/><br/>
-				</form>
-				<br/>
+				<ul id="parameters" class="container"></ul>
 			</div>
             <div dojoType="dijit.layout.TabContainer" region="center">
                 <div dojoType="dijit.layout.ContentPane" title="AND Display" id ="ANDTableContainer"></div>
@@ -86,7 +84,7 @@
 
                                 <!--For global rotation-->
                                 <timesensor def='timer' cycleinterval='100' loop='true'></timesensor>
-                                <orientationinterpolator def='xrotation' key='0 0.5 1' keyvalue='0 0 0 0, 0 3.14 0 3.14, 0 6.28 0 6.28'></orientationinterpolator>
+                                <orientationinterpolator def='xrotation' key='0 4 8' keyvalue='0 0 0 0, 0 3.14 0 3.14, 0 6.28 0 6.28'></orientationinterpolator>
                                 <route fromnode='timer' fromfield='fraction_changed' tonode='xrotation' tofield='set_fraction'></route>
                                 <route fromnode='xrotation' fromfield='value_changed' tonode='globalTransform' tofield='rotation'></route>
 

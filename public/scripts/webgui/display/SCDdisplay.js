@@ -2,7 +2,8 @@
 dojo.require("webgui.pac.Controller");
 dojo.require("webgui.pac.Abstraction");
 dojo.require("webgui.pac.GridPresentation");
-//Stores
+dojo.require("webgui.pac.DndTargetable");
+
 dojo.require("dojo.data.ItemFileWriteStore");
 
 dojo.declare("SCDAbstraction", webgui.pac.Abstraction, {
@@ -28,11 +29,9 @@ dojo.declare("SCDAbstraction", webgui.pac.Abstraction, {
 			storeElem[parameter.Name + "Value"] = parameter.Value;
 			storeElem.Name = parameter.Name;
 			storeElem.Timestamp = parameter.Timestamp;
-			
 			store.newItem(storeElem);
 			
 			/*refactor, prolly need to use queries and different sort of table !!!*/
-			
 			counter++;
 			if(counter > limit) {
 				//getting the size of the store
@@ -49,21 +48,12 @@ dojo.declare("SCDAbstraction", webgui.pac.Abstraction, {
 			
 			/*refactor/*/
 		}
-        //TODO not a good idea to update the view constantly
-		dojo.connect(store, "newItem", this, "updateViewCallback");
-		
-		//subscribe to internal topics dynamically, when they are added to the subscription lists
-                /*
+        
 		var subscribeToTopic = function(subscription) {
-			//console.log(this.updateViewCallback);
-			msgbus.subscribe("/parameter/live", this, "parameterHandler");
-			dojo.connect(this, "parameterHandler", this, "updateViewCallback");
+			msgbus.subscribe(subscription.topic, parameterHandler);
 		};
 
 		msgbus.subscribe("/request/subscribe", subscribeToTopic);
-		*/
-		//TODO Make upper code work !
-		msgbus.subscribe("/parameter/live", parameterHandler);
 
 		 //parameter hiding and showing
 		function addViewParameter(item) {
@@ -81,21 +71,33 @@ dojo.declare("SCDAbstraction", webgui.pac.Abstraction, {
 
 dojo.declare("SCDController", webgui.pac.Controller, {
 	divId: "SCDTable", //defaultId
+	//divId: "TelemetryTools",
 	columnLimit: 5, //maximum number of parameters shown, based on order recieved
 	constructor: function() {
-		var gridStructure = [
-				{"field": "Timestamp", "name": "Timestamp", "width": "100px"}
-		];
-		
-		var scdPresentation =  new webgui.pac.GridPresentation({
-		"divId": this.divId,
+		var dataAbstraction = new SCDAbstraction();		
+		var presentation = new webgui.pac.GridPresentation({
+		"domId": this.divId+"Container",
 		"configuration": {
 			"id": this.divId,
-			//"store": dataAbstraction.getStore(),
+			"store": dataAbstraction.getStore(),
 			"clientSort": true,
-			"structure": gridStructure,
+			"structure": [
+				{"field": "Timestamp", "name": "Timestamp", width: '100px'}
+			]
 			//"updateDelay": 1000
 		}});
+		// add DnD capability to the presentation
+		presentation = webgui.pac.DndTargetable(presentation,{
+			"isSource":false,
+			"creator":function creator(item,hint){
+				console.log("item creator");
+				console.log(item);
+				console.log("hint: "+hint);
+				var n = document.createElement("div");
+				msgbus.publish("/viewparams/show",[{parameter:item}]);
+				return {node: n, data: item};
+			}
+		});
 		
 		/**
 		* function for updating tabel columns if new parameters are added.
@@ -103,38 +105,42 @@ dojo.declare("SCDController", webgui.pac.Controller, {
 		* @param parameter The object coming from the subscribed channel
 		*/
         //TODO maybe THIS should also store the info and update only at a set interval !!!
-		var updateViewCallback = function(parameter) {
+ 		var updateViewCallback = function(item) {
 			//look if, the column already exists
+			
+			var gridStructure = presentation.configuration.structure;
 			var nameExists = false;
 			dojo.forEach(gridStructure, function(entry, i){
-				if(entry.name == parameter.Name) {
+				if(entry.name == item.parameter) {
 					nameExists = true;
 				}
 			});
+			
 			//if it doesn't, add it.
 			if(!nameExists && gridStructure.length <= 5) {
-				gridStructure.push({"field": parameter.Name + "Value", "name": parameter.Name, "width":  "120px"});
-				scdPresentation.setGridStructure(gridStructure);
+			
+				gridStructure.push({"field": item.parameter + "Value", "name": item.parameter, "width":  "120px"});
+				presentation.setGridStructure(gridStructure);
 			}
 			//scroll to the bottom of the list
-			scdPresentation.scrollToGridBottom();
+			presentation.scrollToGridBottom();
 		};
 
-        var removeFromViewCallback = function(parameter) {
-			gridStructure.splice(gridStructure.indexOf(parameter.Name),1);
-			scdPresentation.setGridStructure(gridStructure);
+        var removeFromViewCallback = function(item) {
+			var gridStructure = presentation.configuration.structure;
+			gridStructure.splice(gridStructure.indexOf(item.parameter),1);
+			presentation.setGridStructure(gridStructure);
 		}
         //TODO, this should be done with connect like updateViewCallback
-        msgbus.subscribe("/viewparams/hide", removeFromViewCallback);
+        webgui.msgbus.subscribe("/viewparams/hide", removeFromViewCallback);
+		webgui.msgbus.subscribe("/viewparams/show",updateViewCallback); 
 
-		var dataAbstraction = new SCDAbstraction({"updateViewCallback": updateViewCallback});
-		
-		scdPresentation.setGridStore(dataAbstraction.getStore());
+
 	}
 });
 dojo.declare("webgui.display.SCDdisplay",null,{
 	constructor: function(){
-		console.log("[ANDdisplay] initializing components..");
+		console.log("[SCDdisplay] initializing components..");
 		var controller = new SCDController();
 	}
 });

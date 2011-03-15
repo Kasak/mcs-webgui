@@ -15,17 +15,18 @@ dojo.addOnLoad(function() {
 });
 
 //Test function for local parameter generation
-/* function ParameterGenerator() {
+function ParameterGenerator() {
 	var names = ["par1","par2","par3", "par4"];
 	var generateValue = function(limit) {
 		return Math.floor(Math.random()*limit);
 	};
-	setInterval(function() {
+ 	setInterval(function() {
 		var param = {}
 		param.Name = names[generateValue(names.length)];
 		param.Value = generateValue(105);
-		param.Type = "java.lang.String";
+		param.Type = "Parameter";
 		param.Timestamp = new Date().getTime();
-		msgbus.publish("/parameter/live", [param]);
-	}, 500);
-} */
+		console.log("sending " + JSON.stringify(param));
+		webgui.msgbus.publish("/parameter/live", [param]);
+	}, 2000);
+}

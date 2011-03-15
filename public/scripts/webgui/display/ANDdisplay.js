@@ -2,7 +2,8 @@
 dojo.require("webgui.pac.Controller");
 dojo.require("webgui.pac.Abstraction");
 dojo.require("webgui.pac.GridPresentation");
-//Stores
+dojo.require("webgui.pac.DndTargetable");
+
 dojo.require("dojo.data.ItemFileWriteStore");
 
 dojo.declare("ANDAbstraction", webgui.pac.Abstraction, {	
@@ -49,9 +50,11 @@ dojo.declare("ANDAbstraction", webgui.pac.Abstraction, {
 
 		//parameter hiding and showing
 		function addViewParameter(item) {
+			console.log("AND display addViewParameter for ");
 			viewParameters[item.parameter] = true;
 		}
 		function hideViewParameter(item) {
+		console.log("AND display hideViewParameter for ");
             viewParameters[item.parameter] = false;
             store.fetch({query: {key:item.parameter},
 				onItem: function(item){
@@ -71,8 +74,8 @@ dojo.declare("ANDController", webgui.pac.Controller,{
 	divId: "ANDTable", //defaultId
 	constructor: function() {
 		var dataAbstraction = new ANDAbstraction();
-		new webgui.pac.GridPresentation({
-		"divId": this.divId,
+		var presentation = new webgui.pac.GridPresentation({
+		"domId": this.divId+"Container",
 		"configuration": {
 			"id": this.divId,
 			"store": dataAbstraction.getStore(),
@@ -86,11 +89,24 @@ dojo.declare("ANDController", webgui.pac.Controller,{
 				{"field": 'Timestamp', "name": 'Timestamp', width: '100px'},
 			]
 		}});
+		// add DnD capability to the presentation 
+		
+ 		presentation = webgui.pac.DndTargetable(presentation,{
+			"isSource":false,
+			"creator":function creator(item,hint){
+				console.log("item creator");
+				console.log(item);
+				console.log("hint: "+hint);
+				var n = document.createElement("div");
+				msgbus.publish("/viewparams/show",[{parameter:item}]);
+				return {node: n, data: item};
+			}
+		});
 	}
 });
 dojo.declare("webgui.display.ANDdisplay",null,{
 	constructor: function(){
 		console.log("[ANDdisplay] initializing components..");
-		var controller = new ANDController();
+		var controller = new ANDController();		
 	}
 });

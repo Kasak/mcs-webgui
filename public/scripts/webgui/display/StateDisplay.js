@@ -13,13 +13,17 @@ dojo.declare("StatesAbstraction", webgui.pac.Abstraction, {
 		var store = new dojo.data.ItemFileWriteStore({data:storedata});
 		this.getStore = function(){
 			return store;
-		};		
+		};
+		var viewParameters = [];
 		function parameterHandler (parameter) {
 			//console.log("[StateParameterStore] received " + JSON.stringify(parameter));
-
-			if(parameter.Type !== "State") {
+		// TODO refactor this filtering using the controller
+			if(!viewParameters[parameter.Name] || viewParameters[parameter.Name] === false){
+			return};
+			if(parameter.Unit !== "") {
 				return;
 			}
+			console.log("Here");
 			parameter.key = parameter.Name;
 			parameter.State = '<div class="stateTable' +(parameter.Value == true ? "True" : "False") + '">' + parameter.Value + '</div>';
 
@@ -47,6 +51,25 @@ dojo.declare("StatesAbstraction", webgui.pac.Abstraction, {
 		};
 
 		msgbus.subscribe("/request/subscribe", subscribeToTopic);
+				//parameter hiding and showing
+		function addViewParameter(item) {
+			console.log("AND display addViewParameter for ");
+			viewParameters[item.parameter] = true;
+		}
+		function hideViewParameter(item) {
+		console.log("AND display hideViewParameter for ");
+            viewParameters[item.parameter] = false;
+            store.fetch({query: {key:item.parameter},
+				onItem: function(item){
+					store.deleteItem(item);
+				},
+				onError: function(er) {
+					console.err(er);
+				}
+			});
+		};
+		msgbus.subscribe("/viewparams/show", addViewParameter);
+        msgbus.subscribe("/viewparams/hide", hideViewParameter);
 	}
 });
 
@@ -54,8 +77,8 @@ dojo.declare("StatesController", webgui.pac.Controller, {
 	divId: "StatesTable", //defaultId
 	constructor: function() {
 		var dataAbstraction = new StatesAbstraction();
-		new webgui.pac.GridPresentation({
-		"divId": this.divId,
+		var presentation = new webgui.pac.GridPresentation({
+		"domId": this.divId+"Container",
 		"configuration": {
 			"id": this.divId,
 			"store": dataAbstraction.getStore(),
@@ -69,6 +92,17 @@ dojo.declare("StatesController", webgui.pac.Controller, {
                 {"field": 'Description', "name": 'Description', "width": '200px'},
 			]
 		}});
+		presentation = webgui.pac.DndTargetable(presentation,{
+			"isSource":false,
+			"creator":function creator(item,hint){
+				console.log("item creator");
+				console.log(item);
+				console.log("hint: "+hint);
+				var n = document.createElement("div");
+				msgbus.publish("/viewparams/show",[{parameter:item}]);
+				return {node: n, data: item};
+			}
+		});
 	}
 });
 dojo.declare("webgui.display.StateDisplay",null,{

@@ -40,11 +40,11 @@ dojo.declare("webgui.assembly.Assembler",null,{
 		//define channels what should be listened to
 		// TODO these should really go into each controller
 		webgui.msgbus.publish("/request/subscribe",[{"topic":"/parameter/live"}]);
-		webgui.msgbus.publish("/request/subscribe",[{"topic":"/parameter/logs"}]);
+		webgui.msgbus.publish("/request/subscribe",[{"topic":"/logs/live"}]);
 		var logOutput = function logOutput(param) {
 			console.log(param);
 		}
-		webgui.msgbus.subscribe("/parameter/logs", logOutput);
+		webgui.msgbus.subscribe("/logs/live", logOutput);
 	},
 
 });
