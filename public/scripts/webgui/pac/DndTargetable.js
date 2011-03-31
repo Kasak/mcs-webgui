@@ -14,8 +14,8 @@ webgui.pac.DndTargetable = function(agent,opt){
 	dojo.safeMixin(dndOptions,opt);
 	//finally add the DnD capability
 	agent.dndSource = new dojo.dnd.Source(agent.domId,dndOptions);
- 	dojo.connect(agent.dndSource,"onDrop",function(source,nodes,copy,target){
+ 	/*dojo.connect(agent.dndSource,"onDrop",function(source,nodes,copy,target){
 		console.log(nodes);
-	}); 
+	}); */
 	return agent;
 };

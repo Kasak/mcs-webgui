@@ -23,22 +23,19 @@
             <div id="loaderInner" style="direction:ltr;">Loading application ... </div>
         </div>
         <div dojoType="dijit.layout.BorderContainer" id="borderContainer" design="sidebar" liveSplitters="false" gutters="false">
-			<div dojoType="dijit.layout.AccordionContainer"  region="left" splitter="false" style="width:200px">
-				
-				<div dojoType="dijit.layout.ContentPane" id="TelemetryToolsContainer" title="Telemetry"></div>
-				<div dojoType="dijit.layout.ContentPane" id="CommandingToolsContainer" title="Commanding"></div>				
-			</div>
 			<div dojoType="dijit.layout.ContentPane" region="right" splitter="false" id="ParameterContainer" style="width:200px">
 				<p>Parameter filter</p>
 				<ul id="parameters" class="container"></ul>
 			</div>
-            <div dojoType="dijit.layout.TabContainer" region="center">
-                <div dojoType="dijit.layout.ContentPane" title="AND Display" id ="ANDTableContainer"></div>
-                <div dojoType="dijit.layout.ContentPane" title="SCD Display" id="SCDTableContainer"></div>
-                <div dojoType="dijit.layout.ContentPane" title="Graph display" id="ChartContainer" >
-                    <div id="chartDiv" ></div>
-                    <!--div id="legend"></div-->
-                </div>
+			<div dojoType="dijit.layout.TabContainer" region="center">
+				<div dojoType="dijit.layout.BorderContainer" design="headline" liveSplitter="true" title="Multi Display">
+					<div dojoType="dijit.layout.ContentPane" title="AND Display" id ="ANDTableContainer" region="left" splitter="true"></div>
+					<div dojoType="dijit.layout.ContentPane" title="SCD Display" id="SCDTableContainer" region="center" splitter="true"></div>
+					<div dojoType="dijit.layout.ContentPane" title="Graph display" id="ChartContainer" region="bottom">
+						<div id="chartDiv" ></div>
+						<!--div id="legend"></div-->
+					</div>
+				</div>
                 <div dojoType="dijit.layout.ContentPane" title="3D Display" id="3DContainer">
 
                     <div class="viewbuttons">
